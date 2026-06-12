@@ -21,7 +21,7 @@
       <div class="about-section">
         <h3 class="section-title">关于</h3>
         <div class="about-content">
-          <p>柚子便签 v2.0</p>
+          <p>柚子便签 v2.1</p>
           <p class="description">一款简洁大方，持续改进的便签应用</p>
         </div>
       </div>
