@@ -3,7 +3,7 @@
     <div class="header">
       <div class="header-left">
         <button class="icon-btn" @click="goToNewNote">
-          <span class="icon">＋</span>
+          <img class="icon-img" :src="addIcon" alt="新建" />
         </button>
       </div>
       <h1 class="title">记事</h1>
@@ -13,7 +13,7 @@
           :class="{ active: isSelectMode }"
           @click="toggleSelectMode"
         >
-          <span class="icon">－</span>
+          <img class="icon-img" :src="deleteIcon" alt="删除" />
         </button>
       </div>
     </div>
@@ -73,6 +73,8 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { db } from '../db'
 import emptyIcon from '@/assets/icon-notes.png'
+import addIcon from '@/assets/icon-add.png'
+import deleteIcon from '@/assets/icon-delete.png'
 
 const router = useRouter()
 const notes = ref([])
@@ -93,13 +95,6 @@ const goToNewNote = () => {
 
 const editNote = (note) => {
   router.push(`/notes/edit/${note.id}`)
-}
-
-const deleteNote = async (id) => {
-  if (confirm('确定要删除这个记事吗？')) {
-    await db.notes.delete(id)
-    await loadNotes()
-  }
 }
 
 const toggleSelectMode = () => {
@@ -178,11 +173,15 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  transition: background 0.2s;
+  transition: background var(--duration-fast) var(--ease-out);
 }
 
 .icon-btn:hover {
   background: var(--hover-bg);
+}
+
+.icon-btn:active {
+  transform: scale(0.9);
 }
 
 .icon-btn.active {
@@ -190,8 +189,10 @@ onMounted(() => {
   color: white;
 }
 
-.icon {
-  font-size: 24px;
+.icon-img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
 }
 
 .notes-list {
@@ -203,15 +204,28 @@ onMounted(() => {
   border-radius: 12px;
   padding: 16px;
   margin-bottom: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-sm);
   position: relative;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform var(--duration-fast) var(--ease-out),
+              box-shadow var(--duration-fast) var(--ease-out);
+  animation: cardAppear var(--duration-normal) var(--ease-out) forwards;
+  opacity: 0;
 }
+
+.note-card:nth-child(1) { animation-delay: 0ms; }
+.note-card:nth-child(2) { animation-delay: 50ms; }
+.note-card:nth-child(3) { animation-delay: 100ms; }
+.note-card:nth-child(4) { animation-delay: 150ms; }
+.note-card:nth-child(5) { animation-delay: 200ms; }
 
 .note-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
+}
+
+.note-card:active {
+  transform: translateY(0);
 }
 
 .note-card.selected {

@@ -1,10 +1,4 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
-import Notes from '../pages/Notes.vue'
-import Todos from '../pages/Todos.vue'
-import Settings from '../pages/Settings.vue'
-import NewNote from '../pages/NewNote.vue'
-import EditNote from '../pages/EditNote.vue'
-import NewTodo from '../pages/NewTodo.vue'
 
 const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
@@ -16,32 +10,41 @@ const router = createRouter({
     {
       path: '/notes',
       name: 'Notes',
-      component: Notes
+      component: () => import('../pages/Notes.vue')
     },
     {
       path: '/todos',
       name: 'Todos',
-      component: Todos
+      component: () => import('../pages/Todos.vue')
     },
     {
       path: '/settings',
       name: 'Settings',
-      component: Settings
+      component: () => import('../pages/Settings.vue')
     },
     {
       path: '/notes/new',
       name: 'NewNote',
-      component: NewNote
+      component: () => import('../pages/NewNote.vue'),
+      meta: { hideTabBar: true }
     },
     {
       path: '/notes/edit/:id',
       name: 'EditNote',
-      component: EditNote
+      component: () => import('../pages/EditNote.vue'),
+      meta: { hideTabBar: true }
     },
     {
       path: '/todos/new',
       name: 'NewTodo',
-      component: NewTodo
+      component: () => import('../pages/NewTodo.vue'),
+      meta: { hideTabBar: true }
+    },
+    {
+      path: '/todos/edit/:id',
+      name: 'EditTodo',
+      component: () => import('../pages/EditTodo.vue'),
+      meta: { hideTabBar: true }
     }
   ]
 })

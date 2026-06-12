@@ -1,14 +1,14 @@
 ---
 name: replace-emoji-with-icons
-description: 将Vue组件中的emoji图标替换为实际的PNG/SVG图片文件
+description: 将Vue组件中的emoji或文字字符图标替换为实际的PNG/SVG图片文件
 source: auto-skill
-extracted_at: '2026-06-11T17:06:23.516Z'
+extracted_at: '2026-06-12T02:45:43.966Z'
 ---
 
-# 替换emoji图标为实际图片
+# 替换emoji/文字字符图标为实际图片
 
 ## 场景
-当需要将Vue项目中的emoji图标替换为自定义的PNG/SVG图片时使用此技能。
+当需要将Vue项目中的emoji字符（📝、✅等）或文字字符（+、—等）替换为自定义的PNG/SVG图片时使用此技能。
 
 ## 步骤
 
@@ -17,8 +17,8 @@ extracted_at: '2026-06-11T17:06:23.516Z'
 - 确保文件名有意义，如`记事本.png`、`待办.png`、`设置.png`
 
 ### 2. 识别需要替换的位置
-- 搜索项目中的emoji字符（📝、✅、⚙️等）
-- 检查底部导航栏、空状态提示、按钮图标等位置
+- 搜索项目中的emoji字符（📝、✅、⚙️等）和文字字符（＋、－等）
+- 检查底部导航栏、空状态提示、按钮图标、列表页头部操作按钮等位置
 
 ### 3. 修改Vue组件
 

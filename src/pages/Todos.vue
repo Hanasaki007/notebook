@@ -3,7 +3,7 @@
     <div class="header">
       <div class="header-left">
         <button class="icon-btn" @click="goToNewTodo">
-          <span class="icon">＋</span>
+          <img class="icon-img" :src="addIcon" alt="新建" />
         </button>
       </div>
       <h1 class="title">待办</h1>
@@ -13,7 +13,7 @@
           :class="{ active: isSelectMode }"
           @click="toggleSelectMode"
         >
-          <span class="icon">－</span>
+          <img class="icon-img" :src="deleteIcon" alt="删除" />
         </button>
       </div>
     </div>
@@ -25,15 +25,15 @@
         class="todo-card"
         :class="{ completed: todo.completed, selected: selectedTodos.includes(todo.id), 'select-mode': isSelectMode }"
       >
-        <div class="todo-content" @click="toggleComplete(todo)">
-          <div class="todo-checkbox">
-            <input 
-              type="checkbox" 
+        <div class="todo-content">
+          <div class="todo-checkbox" @click.stop>
+            <input
+              type="checkbox"
               :checked="todo.completed"
               @change.stop="toggleComplete(todo)"
             />
           </div>
-          <div class="todo-text">
+          <div class="todo-text" @click="editTodo(todo)">
             <p class="todo-title" :class="{ 'line-through': todo.completed }">{{ todo.text }}</p>
             <div class="todo-due" v-if="todo.dueDate">
               <span class="due-label">截止：</span>
@@ -83,6 +83,8 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { db } from '../db'
 import emptyIcon from '@/assets/icon-todos.png'
+import addIcon from '@/assets/icon-add.png'
+import deleteIcon from '@/assets/icon-delete.png'
 
 const router = useRouter()
 const todos = ref([])
@@ -110,7 +112,11 @@ const goToNewTodo = () => {
 
 const toggleComplete = async (todo) => {
   await db.todos.update(todo.id, { completed: !todo.completed })
-  await loadTodos()
+  todo.completed = !todo.completed
+}
+
+const editTodo = (todo) => {
+  router.push(`/todos/edit/${todo.id}`)
 }
 
 const toggleSelectMode = () => {
@@ -187,11 +193,15 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  transition: background 0.2s;
+  transition: background var(--duration-fast) var(--ease-out);
 }
 
 .icon-btn:hover {
   background: var(--hover-bg);
+}
+
+.icon-btn:active {
+  transform: scale(0.9);
 }
 
 .icon-btn.active {
@@ -199,8 +209,10 @@ onMounted(() => {
   color: white;
 }
 
-.icon {
-  font-size: 24px;
+.icon-img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
 }
 
 .todos-list {
@@ -212,17 +224,30 @@ onMounted(() => {
   border-radius: 12px;
   padding: 16px;
   margin-bottom: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-sm);
   position: relative;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform var(--duration-fast) var(--ease-out),
+              box-shadow var(--duration-fast) var(--ease-out);
   display: flex;
   align-items: center;
+  animation: cardAppear var(--duration-normal) var(--ease-out) forwards;
+  opacity: 0;
 }
+
+.todo-card:nth-child(1) { animation-delay: 0ms; }
+.todo-card:nth-child(2) { animation-delay: 50ms; }
+.todo-card:nth-child(3) { animation-delay: 100ms; }
+.todo-card:nth-child(4) { animation-delay: 150ms; }
+.todo-card:nth-child(5) { animation-delay: 200ms; }
 
 .todo-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
+}
+
+.todo-card:active {
+  transform: translateY(0);
 }
 
 .todo-card.completed {

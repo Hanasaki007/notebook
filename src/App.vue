@@ -1,8 +1,7 @@
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import TabBar from './components/TabBar.vue'
-import { db } from './db'
 
 const route = useRoute()
 const currentTab = ref('notes')
@@ -23,8 +22,12 @@ watch(() => route.path, (path) => {
 
 <template>
   <div class="app-container">
-    <router-view />
-    <TabBar v-if="!route.path.includes('/new') && !route.path.includes('/edit')" />
+    <router-view v-slot="{ Component }">
+      <transition name="fade" mode="out-in">
+        <component :is="Component" />
+      </transition>
+    </router-view>
+    <TabBar v-if="!route.meta.hideTabBar" />
   </div>
 </template>
 

@@ -23,14 +23,20 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import notesIcon from '@/assets/icon-notes.png'
 import todosIcon from '@/assets/icon-todos.png'
 import settingsIcon from '@/assets/icon-settings.png'
 
 const router = useRouter()
-const currentTab = ref('notes')
+const route = useRoute()
+
+const currentTab = computed(() => {
+  if (route.path.startsWith('/todos')) return 'todos'
+  if (route.path.startsWith('/settings')) return 'settings'
+  return 'notes'
+})
 
 const tabs = [
   { id: 'notes', label: '记事', icon: notesIcon },
@@ -39,7 +45,6 @@ const tabs = [
 ]
 
 const switchTab = (tabId) => {
-  currentTab.value = tabId
   router.push(`/${tabId}`)
 }
 </script>
@@ -66,9 +71,10 @@ const switchTab = (tabId) => {
   justify-content: center;
   padding: 6px 16px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--duration-fast) var(--ease-out);
   border-radius: 8px;
   margin: 4px 0;
+  position: relative;
 }
 
 .tab-item:hover {
@@ -82,6 +88,15 @@ const switchTab = (tabId) => {
 
 .tab-icon {
   margin-bottom: 4px;
+  transition: transform var(--duration-fast) var(--ease-spring);
+}
+
+.tab-item:active .tab-icon {
+  transform: scale(0.85);
+}
+
+.tab-item.active .tab-icon {
+  transform: scale(1.1);
 }
 
 .tab-icon img {
@@ -90,7 +105,8 @@ const switchTab = (tabId) => {
   object-fit: contain;
   filter: grayscale(100%);
   opacity: 0.4;
-  transition: filter 0.2s ease, opacity 0.2s ease;
+  transition: filter var(--duration-normal) var(--ease-out),
+              opacity var(--duration-normal) var(--ease-out);
 }
 
 .tab-item.active .tab-icon img {
@@ -101,5 +117,11 @@ const switchTab = (tabId) => {
 .tab-label {
   font-size: 12px;
   font-weight: 500;
+  transition: color var(--duration-fast) var(--ease-out),
+              transform var(--duration-fast) var(--ease-out);
+}
+
+.tab-item.active .tab-label {
+  transform: translateY(-1px);
 }
 </style>
