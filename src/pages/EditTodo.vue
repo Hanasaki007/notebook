@@ -1,34 +1,36 @@
 <template>
-  <div class="edit-todo-page">
-    <div class="header">
-      <div class="header-left">
-        <button class="back-btn" @click="goBack">返回</button>
-      </div>
-      <h1 class="title">编辑待办</h1>
-      <div class="header-right">
-        <button class="save-btn" @click="saveTodo">保存</button>
-      </div>
-    </div>
+  <div class="page page--full editor">
+    <header class="ed-hd">
+      <button class="ed-hd__back" @click="goBack">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        <span>返回</span>
+      </button>
+      <div class="ed-hd__spacer"></div>
+      <button class="ed-hd__save" @click="saveTodo">保存</button>
+    </header>
 
-    <div class="todo-form">
-      <div class="form-group">
-        <label class="label">待办事项</label>
+    <div class="form">
+      <label class="field">
+        <span class="field__label">待办内容</span>
         <textarea
           v-model="todo.text"
-          class="text-input"
-          placeholder="输入待办事项..."
+          class="field__textarea"
+          placeholder="需要做什么..."
           rows="3"
         ></textarea>
-      </div>
+      </label>
 
-      <div class="form-group">
-        <label class="label">截止时间（可选）</label>
+      <label class="field">
+        <span class="field__label">截止时间</span>
+        <span class="field__hint">可选</span>
         <input
-          type="datetime-local"
           v-model="todo.dueDate"
-          class="date-input"
+          type="datetime-local"
+          class="field__input"
         />
-      </div>
+      </label>
     </div>
   </div>
 </template>
@@ -49,27 +51,24 @@ const todo = ref({
 
 const formatDateToLocal = (date) => {
   const d = new Date(date)
-  const year = d.getFullYear()
-  const month = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  const hours = String(d.getHours()).padStart(2, '0')
-  const minutes = String(d.getMinutes()).padStart(2, '0')
-  return `${year}-${month}-${day}T${hours}:${minutes}`
+  const y = d.getFullYear()
+  const mo = String(d.getMonth() + 1).padStart(2, '0')
+  const da = String(d.getDate()).padStart(2, '0')
+  const h = String(d.getHours()).padStart(2, '0')
+  const mi = String(d.getMinutes()).padStart(2, '0')
+  return `${y}-${mo}-${da}T${h}:${mi}`
 }
 
-const goBack = () => {
-  router.back()
-}
+const goBack = () => router.back()
 
 const saveTodo = async () => {
   if (!todo.value.text.trim()) {
     alert('请输入待办事项内容')
     return
   }
-
   try {
     await db.todos.update(Number(route.params.id), {
-      text: todo.value.text,
+      text: todo.value.text.trim(),
       dueDate: todo.value.dueDate ? new Date(todo.value.dueDate).toISOString() : null
     })
     router.back()
@@ -81,125 +80,128 @@ const saveTodo = async () => {
 
 onMounted(async () => {
   const id = Number(route.params.id)
-  if (isNaN(id)) {
-    alert('无效的待办ID')
-    router.back()
-    return
-  }
-
+  if (isNaN(id)) { alert('无效的待办ID'); router.back(); return }
   const record = await db.todos.get(id)
-  if (record) {
-    todo.value.text = record.text
-    todo.value.completed = record.completed
-    todo.value.dueDate = record.dueDate ? formatDateToLocal(record.dueDate) : ''
-  } else {
-    alert('待办不存在')
-    router.back()
-  }
+  if (!record) { alert('待办不存在'); router.back(); return }
+  todo.value.text = record.text
+  todo.value.completed = record.completed
+  todo.value.dueDate = record.dueDate ? formatDateToLocal(record.dueDate) : ''
 })
 </script>
 
 <style scoped>
-.edit-todo-page {
-  padding-bottom: 70px;
-}
-
-.header {
+/* ============ 顶部 ============ */
+.ed-hd {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 16px;
-  background: var(--bg-primary);
-  border-bottom: 1px solid var(--border-color);
+  padding: var(--sp-2) var(--sp-1);
+  margin-bottom: var(--sp-2);
 }
-
-.title {
-  font-size: 20px;
+.ed-hd__back {
+  height: 36px;
+  padding: 0 var(--sp-3);
+  border-radius: var(--r-full);
+  background: rgba(50, 50, 55, 0.72);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 0.5px solid rgba(255, 255, 255, 0.18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--text-muted);
+  transition: color var(--dur-fast) var(--ease),
+              background var(--dur-fast) var(--ease),
+              transform var(--dur-fast) var(--ease);
+}
+.ed-hd__back svg { width: 16px; height: 16px; flex-shrink: 0; }
+.ed-hd__back:hover { color: var(--text); background: rgba(62, 62, 68, 0.85); }
+.ed-hd__back:active { transform: scale(0.96); }
+.ed-hd__spacer { flex: 1; }
+.ed-hd__save {
+  height: 36px;
+  padding: 0 var(--sp-4);
+  border-radius: var(--r-full);
+  background: var(--brand);
+  color: #fff;
+  font-size: var(--fs-sm);
   font-weight: 600;
-  margin: 0;
+  letter-spacing: 0.01em;
+  transition: background var(--dur-fast) var(--ease),
+              transform var(--dur-fast) var(--ease);
+}
+.ed-hd__save:hover { background: var(--brand-hover); }
+.ed-hd__save:active { transform: scale(0.95); }
+
+/* ============ 表单 ============ */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
 }
 
-.save-btn {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 8px;
-  background: var(--primary-color);
-  color: white;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s;
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
 }
-
-.save-btn:hover {
-  background: var(--primary-hover);
+.field__label {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
 }
-
-.back-btn {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 8px;
-  background: var(--primary-color);
-  color: white;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s;
+.field__hint {
+  font-weight: 400;
+  color: var(--text-subtle);
+  font-size: var(--fs-xs);
 }
-
-.back-btn:hover {
-  background: var(--primary-hover);
-}
-
-.todo-form {
-  padding: 20px;
-}
-
-.form-group {
-  margin-bottom: 20px;
-}
-
-.label {
-  display: block;
-  font-size: 14px;
-  font-weight: 500;
-  margin-bottom: 8px;
-  color: var(--text-primary);
-}
-
-.text-input {
+.field__textarea {
   width: 100%;
-  padding: 16px;
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  font-size: 16px;
-  line-height: 1.5;
+  border: 0.5px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--r-md);
+  background: rgba(50, 50, 55, 0.72);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  padding: var(--sp-3) var(--sp-4);
+  font-size: var(--fs-base);
+  line-height: 1.6;
   resize: vertical;
   min-height: 100px;
-  background: var(--input-bg);
-  color: var(--text-primary);
-  font-family: inherit;
-  transition: border-color 0.2s;
+  transition: border-color var(--dur) var(--ease),
+              box-shadow var(--dur) var(--ease);
 }
-
-.text-input:focus {
+.field__textarea:focus {
   outline: none;
-  border-color: var(--primary-color);
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px var(--brand-soft),
+              inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
+.field__textarea::placeholder { color: var(--text-subtle); }
 
-.date-input {
+.field__input {
   width: 100%;
-  padding: 16px;
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  font-size: 16px;
-  background: var(--input-bg);
-  color: var(--text-primary);
-  transition: border-color 0.2s;
+  border: 0.5px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--r-md);
+  background: rgba(50, 50, 55, 0.72);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  padding: var(--sp-3) var(--sp-4);
+  font-size: var(--fs-sm);
+  color: var(--text);
+  transition: border-color var(--dur) var(--ease),
+              box-shadow var(--dur) var(--ease);
 }
-
-.date-input:focus {
+.field__input:focus {
   outline: none;
-  border-color: var(--primary-color);
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px var(--brand-soft),
+              inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 </style>

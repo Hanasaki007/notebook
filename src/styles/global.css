@@ -1,164 +1,314 @@
-/* 全局CSS变量 */
+/* ============================================================
+   Design Tokens — 柚子便签（深色模式）
+   iOS 深色风格：深灰底 + 暗灰卡片 + 单一品牌橙
+   ============================================================ */
 :root {
-  /* 主色调 - 温暖的橙色系 */
-  --primary-color: #ff9a56;
-  --primary-hover: #ff8a40;
+  /* ---- iOS 深色灰阶（偏亮） ---- */
+  --gray-50:  #222225;
+  --gray-100: #2e2e32;
+  --gray-200: #3a3a3f;
+  --gray-300: #4a4a50;
+  --gray-400: #636368;
+  --gray-500: #8e8e93;
+  --gray-600: #aeaeb2;
+  --gray-700: #d1d1d6;
+  --gray-800: #e5e5ea;
+  --gray-900: #f2f2f7;
 
-  /* 背景色 */
-  --bg-primary: #fffbf7;
-  --bg-secondary: #fff8f0;
-  --card-bg: #ffffff;
-  --input-bg: #fff8f0;
-  --hover-bg: #fff0e6;
+  /* ---- 语义色映射 ---- */
+  --bg:          #161618;
+  --surface:     rgba(44, 44, 48, 0.82);
+  --surface-2:   rgba(55, 55, 60, 0.78);
+  --surface-3:   rgba(68, 68, 74, 0.75);
+  --hover-bg:    rgba(68, 68, 74, 0.55);
 
-  /* 文字颜色 */
-  --text-primary: #3d3d3d;
-  --text-secondary: #6d6d6d;
-  --text-tertiary: #9d9d9d;
+  --text:        #e8e8ec;
+  --text-strong: #f5f5f7;
+  --text-muted:  #98989d;
+  --text-subtle: #6e6e73;
 
-  /* 边框颜色 */
-  --border-color: #e6d5c3;
+  --border:        rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.14);
 
-  /* 阴影 */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  /* ---- 品牌色（iOS 蓝） ---- */
+  --brand:        #007AFF;
+  --brand-hover:  #409CFF;
+  --brand-press:  #005ECB;
+  --brand-soft:   rgba(0, 122, 255, 0.18);
+  --brand-softer: rgba(0, 122, 255, 0.10);
 
-  /* 动画时长 */
-  --duration-fast: 0.15s;
-  --duration-normal: 0.25s;
-  --duration-slow: 0.35s;
+  /* ---- 语义状态色 ---- */
+  --success: #30D158;
+  --warning: #FFD60A;
+  --danger:  #FF453A;
+  --danger-soft: rgba(255, 69, 58, 0.18);
 
-  /* 动画缓动函数 */
-  --ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  --ease-in-out: cubic-bezier(0.42, 0, 0.58, 1);
-  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  /* ---- 字号阶梯（major third 1.2） ---- */
+  --fs-xs:   0.75rem;   /* 12 */
+  --fs-sm:   0.875rem;  /* 14 */
+  --fs-base: 1rem;      /* 16 */
+  --fs-lg:   1.125rem;  /* 18 */
+  --fs-xl:   1.25rem;   /* 20 */
+  --fs-2xl:  1.5rem;    /* 24 */
+
+  /* ---- 间距（8 倍数） ---- */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.25rem;
+  --sp-6: 1.5rem;
+  --sp-8: 2rem;
+  --sp-12: 3rem;
+
+  /* ---- 圆角（体系内只用 3 档） ---- */
+  --r-sm:   8px;
+  --r-md:   12px;
+  --r-lg:   16px;
+  --r-xl:   20px;
+  --r-full: 9999px;
+
+  /* ---- 阴影（iOS 风格：极轻） ---- */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+
+  /* ---- 过渡（短促、不拖沓） ---- */
+  --ease:       cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out:   cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast:   120ms;
+  --dur:        180ms;
+  --dur-slow:   240ms;
+
+  /* ---- z-index 体系 ---- */
+  --z-base:   1;
+  --z-sticky: 100;
+  --z-bar:    200;
+  --z-sheet:  800;
+  --z-modal:  1000;
+  --z-toast:  1100;
+
+  /* ---- 布局 ---- */
+  --tabbar-h: 64px;
+  --content-max: 680px;
+  --radius: 12px;
 }
 
-
-
-/* 全局样式 */
-* {
+/* ============================================================
+   Reset
+   ============================================================ */
+*, *::before, *::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+html, body {
+  max-width: 100%;
+  overflow: hidden;
+  height: 100%;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
+}
+
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  line-height: 1.5;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+               'Hiragino Sans GB', 'Microsoft YaHei', Roboto, sans-serif;
+  font-size: var(--fs-base);
+  line-height: 1.55;
+  background: linear-gradient(155deg, #0c0c18 0%, #151535 25%, #201a45 50%, #1a1540 75%, #0f0e20 100%);
+  color: var(--text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 #app {
-  min-height: 100vh;
+  height: 100%;
 }
 
-/* 滚动条样式 */
+img, svg, video {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  color: var(--brand);
+  text-decoration: none;
+  transition: color var(--dur-fast) var(--ease);
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+input, textarea, select {
+  font: inherit;
+  color: inherit;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* 焦点态：键盘可见、鼠标点击不出现难看轮廓 */
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ============================================================
+   滚动条
+   ============================================================ */
 ::-webkit-scrollbar {
   width: 6px;
+  height: 6px;
 }
-
 ::-webkit-scrollbar-track {
-  background: var(--bg-secondary);
+  background: transparent;
 }
-
 ::-webkit-scrollbar-thumb {
-  background: var(--border-color);
-  border-radius: 3px;
+  background: var(--border-strong);
+  border-radius: var(--r-full);
 }
-
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-tertiary);
+  background: var(--text-subtle);
 }
 
-/* 按钮基础样式 */
-button {
-  font-family: inherit;
-  transition: all var(--duration-fast) var(--ease-out);
+/* ============================================================
+   通用工具类
+   ============================================================ */
+.app-container {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+  /* 允许惯性滚动（iOS） */
+  -webkit-overflow-scrolling: touch;
+  /* 隐藏滚动条，防止切换页面时闪烁 */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.app-container::-webkit-scrollbar {
+  display: none;
 }
 
-button:active {
-  transform: scale(0.97);
+/* 内容容器：移动端铺满，大屏居中 */
+.page {
+  max-width: var(--content-max);
+  margin-inline: auto;
+  padding: var(--sp-4) var(--sp-4) calc(var(--tabbar-h) + var(--sp-6) + var(--sp-3));
+  min-height: 100%;
+}
+.page--full {
+  /* 新建/编辑页：无 tabbar，留出顶部安全区 */
+  padding-bottom: var(--sp-8);
 }
 
-/* 输入框基础样式 */
-input, textarea {
-  font-family: inherit;
-  transition: border-color var(--duration-fast) var(--ease-out),
-              box-shadow var(--duration-fast) var(--ease-out);
+/* ============================================================
+   页面过渡（极短促，不拖沓）
+   ============================================================ */
+.page-enter-active,
+.page-leave-active {
+  transition: opacity var(--dur) var(--ease),
+              transform var(--dur) var(--ease-out);
 }
-
-/* 链接样式 */
-a {
-  color: var(--primary-color);
-  text-decoration: none;
-  transition: color var(--duration-fast) var(--ease-out);
-}
-
-a:hover {
-  text-decoration: underline;
-}
-
-/* 页面过渡动画 */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity var(--duration-normal) var(--ease-out);
-}
-
-.fade-enter-from,
-.fade-leave-to {
+.page-enter-from {
   opacity: 0;
+  transform: translateY(6px);
 }
-
-/* 滑动过渡动画 */
-.slide-enter-active,
-.slide-leave-active {
-  transition: transform var(--duration-normal) var(--ease-out),
-              opacity var(--duration-normal) var(--ease-out);
-}
-
-.slide-enter-from {
-  transform: translateX(20px);
+.page-leave-to {
   opacity: 0;
+  transform: translateY(-4px);
 }
 
-.slide-leave-to {
-  transform: translateX(-20px);
-  opacity: 0;
-}
-
-/* 列表项动画 */
+/* ============================================================
+   列表过渡（短促 fade + 极轻位移）
+   ============================================================ */
 .list-enter-active,
 .list-leave-active {
-  transition: all var(--duration-normal) var(--ease-out);
+  transition: opacity var(--dur) var(--ease),
+              transform var(--dur) var(--ease-out);
 }
-
 .list-enter-from {
   opacity: 0;
-  transform: translateY(-10px);
+  transform: translateY(-6px);
 }
-
 .list-leave-to {
   opacity: 0;
-  transform: translateX(-20px);
+  transform: scale(0.97);
+}
+.list-leave-active {
+  position: absolute;
+  width: calc(100% - var(--sp-4) * 2);
 }
 
-/* 卡片出现动画 */
-@keyframes cardAppear {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* ============================================================
+   动作面板 / Modal 过渡
+   ============================================================ */
+.sheet-enter-active,
+.sheet-leave-active {
+  transition: transform var(--dur-slow) var(--ease-out),
+              opacity var(--dur-slow) var(--ease);
+}
+.sheet-enter-from,
+.sheet-leave-to {
+  opacity: 0;
+  transform: translateY(100%);
 }
 
-.card-animate {
-  animation: cardAppear var(--duration-normal) var(--ease-out) forwards;
+.backdrop-enter-active,
+.backdrop-leave-active {
+  transition: opacity var(--dur) var(--ease);
+}
+.backdrop-enter-from,
+.backdrop-leave-to {
+  opacity: 0;
+}
+
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity var(--dur) var(--ease);
+}
+.modal-enter-active .modal-card,
+.modal-leave-active .modal-card {
+  transition: transform var(--dur-slow) var(--ease-out),
+              opacity var(--dur) var(--ease);
+}
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
+.modal-enter-from .modal-card,
+.modal-leave-to .modal-card {
+  opacity: 0;
+  transform: translateY(12px) scale(0.98);
+}
+
+/* ============================================================
+   尊重「减少动态」偏好
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

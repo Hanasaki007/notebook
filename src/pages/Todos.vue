@@ -1,80 +1,169 @@
 <template>
-  <div class="todos-page">
-    <div class="header">
-      <div class="header-left">
-        <button class="icon-btn" @click="goToNewTodo">
-          <img class="icon-img" :src="addIcon" alt="新建" />
-        </button>
+  <div class="page todos-page" :style="isSelectMode && selectedTodos.length > 0 ? { paddingBottom: 'calc(var(--tabbar-h) + 88px + var(--sp-3))' } : {}">
+    <!-- ============ 头部 ============ -->
+    <header class="hd">
+      <div class="hd__row">
+        <div class="hd__left">
+          <h1 class="hd__title">待办</h1>
+        </div>
+        <div class="hd__right">
+          <button
+            class="pill"
+            :class="{ 'pill--active': isSelectMode }"
+            @click="toggleSelectMode"
+          >
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <rect x="5" y="6" width="4" height="4" rx="0.8" stroke="currentColor" stroke-width="1.6" />
+              <rect x="5" y="14" width="4" height="4" rx="0.8" stroke="currentColor" stroke-width="1.6" />
+              <path d="M11 8h6M11 16h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+            </svg>
+            <span>{{ isSelectMode ? '取消' : '选择' }}</span>
+          </button>
+          <button class="fab" aria-label="新建待办" @click="goToNewTodo">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" />
+            </svg>
+          </button>
+        </div>
       </div>
-      <h1 class="title">待办</h1>
-      <div class="header-right">
-        <button
-          class="icon-btn"
-          :class="{ active: isSelectMode }"
-          @click="toggleSelectMode"
-        >
-          <img class="icon-img" :src="deleteIcon" alt="删除" />
-        </button>
-      </div>
-    </div>
-    
-    <div class="todos-list" v-if="todos.length > 0">
-      <div
-        v-for="todo in sortedTodos"
-        :key="todo.id"
-        class="todo-card"
-        :class="{ completed: todo.completed, selected: selectedTodos.includes(todo.id), 'select-mode': isSelectMode }"
+    </header>
+
+    <!-- ============ 列表 ============ -->
+    <template v-if="todos.length">
+      <!-- 未完成 -->
+      <TransitionGroup
+        v-if="uncompleted.length"
+        name="list"
+        tag="div"
+        class="todo-list"
       >
-        <div class="todo-content">
-          <div class="todo-checkbox" @click.stop>
-            <input
-              type="checkbox"
-              :checked="todo.completed"
-              @change.stop="toggleComplete(todo)"
-            />
-          </div>
-          <div class="todo-text" @click="editTodo(todo)">
-            <p class="todo-title" :class="{ 'line-through': todo.completed }">{{ todo.text }}</p>
-            <div class="todo-due" v-if="todo.dueDate">
-              <span class="due-label">截止：</span>
-              <span class="due-date" :class="{ overdue: isOverdue(todo.dueDate) }">
+        <article
+          v-for="todo in uncompleted"
+          :key="todo.id"
+          class="card"
+          :style="isSelectMode && selectedTodos.includes(todo.id) ? { borderColor: 'var(--brand)', background: 'var(--brand-softer)' } : {}"
+          @click="onCardClick(todo)"
+        >
+          <div class="card__inner">
+            <button
+              class="ck"
+              :class="{ 'ck--on': todo.completed }"
+              aria-label="切换完成"
+              @click.stop="toggleComplete(todo)"
+            >
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M6 12.5l4 4 8-8.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </button>
+            <div class="card__body">
+              <p class="card__text">{{ todo.text }}</p>
+              <span
+                v-if="todo.dueDate"
+                class="card__due"
+                :class="{ 'card__due--late': isOverdue(todo.dueDate) }"
+              >
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5" />
+                  <path d="M12 7v5.5l3 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                </svg>
                 {{ formatDate(todo.dueDate) }}
               </span>
             </div>
           </div>
-        </div>
-        
-        <div class="select-checkbox" v-if="isSelectMode">
-          <input 
-            type="checkbox" 
-            :checked="selectedTodos.includes(todo.id)"
-            @change="toggleSelect(todo.id)"
-          />
+          <button
+            v-if="isSelectMode"
+            class="pick"
+            :style="{
+              background: selectedTodos.includes(todo.id) ? 'var(--brand)' : 'var(--surface)',
+              borderColor: selectedTodos.includes(todo.id) ? 'var(--brand)' : 'var(--border-strong)'
+            }"
+            @click.stop="toggleSelect(todo.id)"
+          >
+            <svg viewBox="0 0 24 24" fill="none" :style="{ opacity: selectedTodos.includes(todo.id) ? 1 : 0 }">
+              <path d="M6 12.5l4 4 8-8.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+        </article>
+      </TransitionGroup>
+
+      <!-- 已完成分组 -->
+      <template v-if="completed.length && !isSelectMode">
+        <button class="group-toggle" @click="showDone = !showDone">
+          <svg
+            viewBox="0 0 24 24" fill="none"
+            class="group-toggle__arrow"
+            :class="{ 'is-open': showDone }"
+          >
+            <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <span>已完成 ({{ completed.length }})</span>
+        </button>
+
+        <Transition name="page">
+          <div v-if="showDone" class="done-group">
+            <TransitionGroup name="list" tag="div" class="todo-list todo-list--muted">
+              <article
+                v-for="todo in completed"
+                :key="todo.id"
+                class="card card--done"
+              >
+                <div class="card__accent card__accent--done" aria-hidden="true"></div>
+                <div class="card__inner">
+                  <button
+                    class="ck ck--on"
+                    aria-label="取消完成"
+                    @click.stop="toggleComplete(todo)"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <path d="M6 12.5l4 4 8-8.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </button>
+                  <div class="card__body">
+                    <p class="card__text card__text--done">{{ todo.text }}</p>
+                    <span v-if="todo.dueDate" class="card__due">{{ formatDate(todo.dueDate) }}</span>
+                  </div>
+                </div>
+                <button class="card__rm" aria-label="删除" @click.stop="quickDelete(todo)">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                  </svg>
+                </button>
+              </article>
+            </TransitionGroup>
+          </div>
+        </Transition>
+      </template>
+    </template>
+
+    <!-- ============ 空状态 ============ -->
+    <div v-else class="empty">
+      <div class="empty__visual" aria-hidden="true">
+        <svg viewBox="0 0 120 120" fill="none">
+          <!-- 圆形底 -->
+          <circle cx="60" cy="60" r="40" fill="var(--brand-softer)" />
+          <circle cx="60" cy="60" r="40" stroke="var(--border-strong)" stroke-width="1.5" />
+          <!-- 对勾 -->
+          <path d="M44 61l9 9 18-19" stroke="var(--brand)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" />
+          <!-- 装饰 -->
+          <circle cx="26" cy="32" r="3" fill="var(--brand)" opacity="0.12" />
+          <circle cx="96" cy="88" r="4" fill="var(--brand)" opacity="0.10" />
+          <rect x="82" y="28" width="6" height="6" rx="1.5" fill="var(--brand)" opacity="0.08" />
+        </svg>
+      </div>
+      <p class="empty__title">没有待办事项</p>
+      <p class="empty__sub">点击右上角的 + 开始添加</p>
+    </div>
+
+    <!-- ============ 批量操作 ============ -->
+    <Transition name="sheet">
+      <div v-if="isSelectMode && selectedTodos.length > 0" class="action-bar">
+        <span class="action-bar__count">已选 <strong>{{ selectedTodos.length }}</strong> 项</span>
+        <div class="action-bar__btns">
+          <button class="abtn abtn--ghost" @click="cancelSelect">取消</button>
+          <button class="abtn abtn--danger" @click="batchDelete">删除</button>
         </div>
       </div>
-    </div>
-    
-    <div class="empty-state" v-else>
-      <div class="empty-icon">
-        <img
-          :src="emptyIcon"
-          alt=""
-          aria-hidden="true"
-          width="64"
-          height="64"
-          @error="(e) => (e.target.style.display = 'none')"
-        />
-      </div>
-      <p>还没有待办事项</p>
-      <p>点击左上角的 + 开始添加</p>
-    </div>
-    
-    <div class="batch-actions" v-if="isSelectMode && selectedTodos.length > 0">
-      <button class="batch-btn" @click="batchDelete">
-        删除选中 ({{ selectedTodos.length }})
-      </button>
-      <button class="batch-btn cancel" @click="cancelSelect">取消</button>
-    </div>
+    </Transition>
   </div>
 </template>
 
@@ -82,292 +171,395 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { db } from '../db'
-import emptyIcon from '@/assets/icon-todos.png'
-import addIcon from '@/assets/icon-add.png'
-import deleteIcon from '@/assets/icon-delete.png'
 
 const router = useRouter()
 const todos = ref([])
 const isSelectMode = ref(false)
 const selectedTodos = ref([])
+const showDone = ref(false)
 
-const sortedTodos = computed(() => {
-  return [...todos.value].sort((a, b) => {
-    // 未完成的在前，已完成的在后
-    if (a.completed !== b.completed) {
-      return a.completed ? 1 : -1
-    }
-    // 按创建时间排序
-    return new Date(b.createdAt) - new Date(a.createdAt)
-  })
-})
+const uncompleted = computed(() =>
+  todos.value.filter((t) => !t.completed)
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+)
 
-const loadTodos = async () => {
-  todos.value = await db.todos.toArray()
-}
+const completed = computed(() =>
+  todos.value.filter((t) => t.completed)
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+)
 
-const goToNewTodo = () => {
-  router.push('/todos/new')
+const loadTodos = async () => { todos.value = await db.todos.toArray() }
+
+const goToNewTodo = () => router.push('/todos/new')
+
+const onCardClick = (todo) => {
+  if (isSelectMode.value) toggleSelect(todo.id)
+  else router.push(`/todos/edit/${todo.id}`)
 }
 
 const toggleComplete = async (todo) => {
   await db.todos.update(todo.id, { completed: !todo.completed })
-  todo.completed = !todo.completed
-}
-
-const editTodo = (todo) => {
-  router.push(`/todos/edit/${todo.id}`)
+  await loadTodos()
 }
 
 const toggleSelectMode = () => {
   isSelectMode.value = !isSelectMode.value
-  if (!isSelectMode.value) {
-    selectedTodos.value = []
-  }
+  if (!isSelectMode.value) selectedTodos.value = []
 }
 
 const toggleSelect = (id) => {
-  const index = selectedTodos.value.indexOf(id)
-  if (index > -1) {
-    selectedTodos.value.splice(index, 1)
-  } else {
-    selectedTodos.value.push(id)
-  }
+  const i = selectedTodos.value.indexOf(id)
+  if (i > -1) selectedTodos.value.splice(i, 1)
+  else selectedTodos.value.push(id)
 }
 
 const batchDelete = async () => {
-  if (confirm(`确定要删除选中的 ${selectedTodos.value.length} 个待办事项吗？`)) {
-    await db.todos.bulkDelete(selectedTodos.value)
-    selectedTodos.value = []
-    isSelectMode.value = false
-    await loadTodos()
-  }
-}
-
-const cancelSelect = () => {
+  if (!confirm(`确定删除选中的 ${selectedTodos.value.length} 个待办吗？`)) return
+  await db.todos.bulkDelete(selectedTodos.value)
   selectedTodos.value = []
   isSelectMode.value = false
+  await loadTodos()
 }
 
-const isOverdue = (dueDate) => {
-  return new Date(dueDate) < new Date()
+const cancelSelect = () => { selectedTodos.value = []; isSelectMode.value = false }
+
+const quickDelete = async (todo) => {
+  await db.todos.delete(todo.id)
+  await loadTodos()
 }
+
+const isOverdue = (dueDate) => new Date(dueDate) < new Date()
 
 const formatDate = (date) => {
   if (!date) return ''
-  return new Date(date).toLocaleDateString('zh-CN')
+  const d = new Date(date)
+  const now = new Date()
+  const sameDay = d.toDateString() === now.toDateString()
+  if (sameDay) return d.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+  return d.toLocaleDateString('zh-CN', { month: 'numeric', day: 'numeric' })
 }
 
-onMounted(() => {
-  loadTodos()
-})
+onMounted(() => { loadTodos() })
 </script>
 
 <style scoped>
-.todos-page {
-  padding-bottom: 70px;
+/* ========================================================
+   头部（与 Notes 完全一致）
+   ======================================================== */
+.hd {
+  padding: var(--sp-5) var(--sp-1) var(--sp-3);
 }
-
-.header {
+.hd__row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 16px;
-  background: var(--bg-primary);
-  border-bottom: 1px solid var(--border-color);
+  justify-content: space-between;
+}
+.hd__left {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  min-width: 0;
+}
+.hd__title {
+  font-size: clamp(1.75rem, 5vw, 2.125rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--text-strong);
+  line-height: 1.15;
+}
+.hd__right {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
 }
 
-.title {
-  font-size: 20px;
-  font-weight: 600;
-  margin: 0;
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 36px;
+  padding: 0 var(--sp-3);
+  border-radius: var(--r-full);
+  background: rgba(50, 50, 55, 0.72);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 0.5px solid rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--text-muted);
+  transition: all var(--dur-fast) var(--ease);
+}
+.pill svg { width: 16px; height: 16px; flex-shrink: 0; }
+.pill:hover { color: var(--text); background: rgba(62, 62, 68, 0.85); }
+.pill:active { transform: scale(0.96); }
+.pill--active {
+  background: var(--brand-soft);
+  border-color: var(--brand);
+  color: var(--brand);
 }
 
-.icon-btn {
-  width: 44px;
-  height: 44px;
-  border: none;
-  background: none;
+.fab {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-full);
+  background: var(--brand);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--dur-fast) var(--ease),
+              transform var(--dur-fast) var(--ease);
+}
+.fab svg { width: 20px; height: 20px; }
+.fab:hover { background: var(--brand-hover); }
+.fab:active { transform: scale(0.92); }
+
+/* ========================================================
+   卡片列表
+   ======================================================== */
+.todo-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  position: relative;
+}
+.todo-list--muted {
+  gap: var(--sp-2);
+}
+
+.card {
+  display: flex;
+  background: rgba(50, 50, 55, 0.72);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-radius: var(--r-lg);
+  border: 0.5px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2),
+              inset 0 1px 0 rgba(255, 255, 255, 0.12);
   cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  height: 88px;
+  transition: background var(--dur-fast) var(--ease),
+              transform var(--dur-fast) var(--ease);
+}
+.card:active {
+  transform: scale(0.98);
+  background: rgba(62, 62, 68, 0.85);
+}
+.card--done {
+  cursor: default;
+}
+.card--done:active {
+  transform: none;
+}
+
+.card__inner {
+  flex: 1;
+  min-width: 0;
+  padding: var(--sp-3) var(--sp-4);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  overflow: hidden;
+}
+
+.card__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.card__text {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.45;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.card__text--done {
+  text-decoration: line-through;
+  color: var(--text-subtle);
+  font-weight: 500;
+}
+
+.card__due {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.card__due svg { width: 13px; height: 13px; flex-shrink: 0; }
+.card__due--late {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+/* 复选框 */
+.ck {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  transition: background var(--duration-fast) var(--ease-out);
+  border-radius: var(--r-full);
+  border: 2px solid var(--border-strong);
+  background: var(--surface);
+  color: transparent;
+  transition: all var(--dur-fast) var(--ease-out);
+}
+.ck svg { width: 13px; height: 13px; }
+.ck:hover {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+.ck--on {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
 }
 
-.icon-btn:hover {
-  background: var(--hover-bg);
-}
-
-.icon-btn:active {
-  transform: scale(0.9);
-}
-
-.icon-btn.active {
-  background: var(--primary-color);
-  color: white;
-}
-
-.icon-img {
+/* 选择圆形 */
+.pick {
+  position: absolute;
+  top: var(--sp-3);
+  right: var(--sp-3);
   width: 24px;
   height: 24px;
-  object-fit: contain;
-}
-
-.todos-list {
-  padding: 16px;
-}
-
-.todo-card {
-  background: var(--card-bg);
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 12px;
-  box-shadow: var(--shadow-sm);
-  position: relative;
-  cursor: pointer;
-  transition: transform var(--duration-fast) var(--ease-out),
-              box-shadow var(--duration-fast) var(--ease-out);
+  border-radius: var(--r-full);
+  border: 2px solid var(--border-strong);
+  background: var(--surface);
   display: flex;
-  align-items: center;
-  animation: cardAppear var(--duration-normal) var(--ease-out) forwards;
-  opacity: 0;
-}
-
-.todo-card:nth-child(1) { animation-delay: 0ms; }
-.todo-card:nth-child(2) { animation-delay: 50ms; }
-.todo-card:nth-child(3) { animation-delay: 100ms; }
-.todo-card:nth-child(4) { animation-delay: 150ms; }
-.todo-card:nth-child(5) { animation-delay: 200ms; }
-
-.todo-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-.todo-card:active {
-  transform: translateY(0);
-}
-
-.todo-card.completed {
-  opacity: 0.7;
-}
-
-.todo-card.selected {
-  border: 2px solid var(--primary-color);
-}
-
-.todo-card.select-mode {
-  padding-right: 44px;
-}
-
-.todo-content {
-  display: flex;
-  gap: 12px;
-  flex: 1;
-}
-
-.todo-checkbox {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-}
-
-.todo-checkbox input {
-  width: 20px;
-  height: 20px;
-  cursor: pointer;
-  margin: 0;
-}
-
-.todo-text {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.todo-title {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 500;
-  line-height: 1.4;
-}
-
-.todo-title.line-through {
-  text-decoration: line-through;
-  color: var(--text-secondary);
-}
-
-.todo-due {
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-
-.due-label {
-  color: var(--text-tertiary);
-}
-
-.due-date {
-  color: var(--text-secondary);
-}
-
-.due-date.overdue {
-  color: #dc2626;
-  font-weight: 500;
-}
-
-.select-checkbox {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-}
-
-.empty-state {
-  display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 60px 20px;
-  text-align: center;
-  color: var(--text-secondary);
+  transition: background var(--dur-fast) var(--ease),
+              border-color var(--dur-fast) var(--ease);
+  z-index: 2;
+}
+.pick svg {
+  width: 14px;
+  height: 14px;
+  transition: opacity var(--dur-fast) var(--ease);
 }
 
-.empty-icon {
-  margin-bottom: 16px;
-}
-
-.empty-icon img {
-  width: 64px;
-  height: 64px;
-  object-fit: contain;
-}
-
-.batch-actions {
-  position: fixed;
-  bottom: 70px;
-  left: 0;
-  right: 0;
-  padding: 16px;
-  background: var(--bg-primary);
-  border-top: 1px solid var(--border-color);
+/* 已完成项快速删除 */
+.card__rm {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
   display: flex;
-  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-full);
+  color: var(--text-subtle);
+  margin-right: var(--sp-2);
+  transition: all var(--dur-fast) var(--ease);
+}
+.card__rm svg { width: 15px; height: 15px; }
+.card__rm:hover { background: var(--danger-soft); color: var(--danger); }
+
+/* 已完成分组折叠 */
+.group-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-top: var(--sp-5);
+  margin-bottom: var(--sp-3);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--text-muted);
+  padding: var(--sp-2) 0;
+  transition: color var(--dur-fast) var(--ease);
+}
+.group-toggle:hover { color: var(--text); }
+.group-toggle__arrow {
+  width: 16px;
+  height: 16px;
+  transition: transform var(--dur) var(--ease-out);
+}
+.group-toggle__arrow.is-open { transform: rotate(90deg); }
+
+.done-group { margin-bottom: var(--sp-4); }
+
+/* ========================================================
+   空状态
+   ======================================================== */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--sp-12) var(--sp-4) var(--sp-8);
+}
+.empty__visual {
+  width: 120px;
+  height: 120px;
+  margin-bottom: var(--sp-6);
+}
+.empty__visual svg { width: 100%; height: 100%; }
+.empty__title {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: var(--sp-1);
+}
+.empty__sub {
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  line-height: 1.5;
 }
 
-.batch-btn {
-  flex: 1;
-  padding: 12px;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  cursor: pointer;
-  background: var(--primary-color);
-  color: white;
+/* ========================================================
+   批量操作栏
+   ======================================================== */
+.action-bar {
+  position: fixed;
+  left: var(--sp-4);
+  right: var(--sp-4);
+  bottom: calc(var(--tabbar-h) + var(--sp-6));
+  z-index: var(--z-sheet);
+  background: rgba(50, 50, 55, 0.92);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  color: #fff;
+  border-radius: var(--r-lg);
+  border: 0.5px solid rgba(255, 255, 255, 0.1);
+  padding: var(--sp-3) var(--sp-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  box-shadow: var(--shadow-lg);
+  max-width: calc(var(--content-max) - var(--sp-4) * 2);
+  margin-inline: auto;
 }
+.action-bar__count { font-size: var(--fs-sm); color: rgba(255, 255, 255, 0.65); }
+.action-bar__count strong { color: #fff; font-weight: 600; }
+.action-bar__btns { display: flex; gap: var(--sp-2); }
 
-.batch-btn.cancel {
-  background: var(--hover-bg);
-  color: var(--text-primary);
+.abtn {
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--r-sm);
+  transition: background var(--dur-fast) var(--ease),
+              transform var(--dur-fast) var(--ease);
+  white-space: nowrap;
 }
+.abtn:active { transform: scale(0.96); }
+.abtn--ghost { background: rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.85); }
+.abtn--ghost:hover { background: rgba(255, 255, 255, 0.18); }
+.abtn--danger { background: var(--danger); color: #fff; }
+.abtn--danger:hover { background: #b91c1c; }
 </style>
