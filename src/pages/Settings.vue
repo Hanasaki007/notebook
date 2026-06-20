@@ -33,11 +33,45 @@
       </div>
     </section>
 
+    <!-- 外观（主题切换） -->
+    <section class="theme">
+      <h3 class="section-title">外观</h3>
+      <div class="theme__group" role="tablist" aria-label="主题">
+        <button
+          class="theme__btn"
+          :class="{ 'theme__btn--active': theme === 'dark' }"
+          role="tab"
+          :aria-selected="theme === 'dark'"
+          @click="setTheme('dark')"
+        >
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M20 13.5A8 8 0 0 1 10.5 4a8 8 0 1 0 9.5 9.5z"
+                  stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
+          </svg>
+          <span>深色</span>
+        </button>
+        <button
+          class="theme__btn"
+          :class="{ 'theme__btn--active': theme === 'light' }"
+          role="tab"
+          :aria-selected="theme === 'light'"
+          @click="setTheme('light')"
+        >
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.6" />
+            <path d="M12 2.5v2.2M12 19.3v2.2M21.5 12h-2.2M4.7 12H2.5M18.7 5.3l-1.6 1.6M6.9 17.1l-1.6 1.6M18.7 18.7l-1.6-1.6M6.9 6.9L5.3 5.3"
+                  stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+          </svg>
+          <span>浅色</span>
+        </button>
+      </div>
+    </section>
+
     <!-- 关于 -->
     <section class="about">
       <h3 class="section-title">关于</h3>
       <div class="about__info">
-          <p class="about__name">柚子便签 v2.2</p>
+          <p class="about__name">柚子便签 v2.3</p>
           <p class="about__desc">简洁大方，持续改进的便签应用</p>
       </div>
     </section>
@@ -86,6 +120,16 @@ const settings = ref({
   username: '用户',
   avatar: ''
 })
+
+// 主题：从 localStorage 初始化（main.js 已在挂载前应用）
+const theme = ref(localStorage.getItem('theme') || 'dark')
+
+const setTheme = (value) => {
+  if (value !== 'dark' && value !== 'light') return
+  theme.value = value
+  localStorage.setItem('theme', value)
+  document.documentElement.setAttribute('data-theme', value)
+}
 
 const initials = computed(() => {
   return settings.value.username ? settings.value.username.charAt(0).toUpperCase() : 'U'
@@ -266,6 +310,61 @@ onMounted(() => {
   color: var(--text-strong);
 }
 
+/* ============ 主题切换 ============ */
+.theme {
+  background: rgba(50, 50, 55, 0.72);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-radius: var(--r-lg);
+  border: 0.5px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2),
+              inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  padding: var(--sp-5) var(--sp-4);
+  margin-top: var(--sp-3);
+}
+.theme__group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-3);
+}
+.theme__btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  padding: var(--sp-4) var(--sp-3);
+  border-radius: var(--r-md);
+  background: rgba(255, 255, 255, 0.06);
+  border: 0.5px solid rgba(255, 255, 255, 0.10);
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  transition: all var(--dur-fast) var(--ease);
+}
+.theme__btn svg {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+.theme__btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text);
+}
+.theme__btn:active {
+  transform: scale(0.97);
+}
+.theme__btn--active {
+  background: var(--brand);
+  color: #fff;
+  border-color: var(--brand);
+  box-shadow: 0 2px 8px var(--brand-soft);
+}
+.theme__btn--active:hover {
+  background: var(--brand-hover);
+  color: #fff;
+}
+
 /* ============ 关于 ============ */
 .about {
   background: rgba(50, 50, 55, 0.72);
@@ -276,6 +375,7 @@ onMounted(() => {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2),
               inset 0 1px 0 rgba(255, 255, 255, 0.12);
   padding: var(--sp-5) var(--sp-4);
+  margin-top: var(--sp-3);
   text-align: center;
 }
 .section-title {

@@ -82,27 +82,13 @@
     <!-- ============ 空状态 ============ -->
     <div v-else class="empty">
       <div class="empty__visual" aria-hidden="true">
-        <!-- 精致笔记本插画 -->
+        <!-- 记事图标（与底部导航栏样式一致：线条风格） -->
         <svg viewBox="0 0 120 120" fill="none">
-          <!-- 本子 -->
-          <rect x="30" y="18" width="60" height="84" rx="6" fill="#fff" stroke="var(--border-strong)" stroke-width="1.5" />
-          <rect x="30" y="18" width="60" height="84" rx="6" fill="var(--brand-softer)" />
-          <!-- 装订线 -->
-          <line x1="44" y1="18" x2="44" y2="102" stroke="var(--border)" stroke-width="1" stroke-dasharray="3 3" />
-          <!-- 文字行 -->
-          <rect x="50" y="34" width="30" height="3" rx="1.5" fill="var(--brand)" opacity="0.35" />
-          <rect x="50" y="44" width="24" height="2.5" rx="1.25" fill="var(--border-strong)" />
-          <rect x="50" y="52" width="28" height="2.5" rx="1.25" fill="var(--border-strong)" />
-          <rect x="50" y="60" width="18" height="2.5" rx="1.25" fill="var(--border-strong)" />
-          <!-- 铅笔 -->
-          <g transform="translate(76, 14) rotate(25)">
-            <rect x="0" y="0" width="5" height="40" rx="1" fill="var(--brand)" />
-            <rect x="0" y="36" width="5" height="8" rx="0 0 1.5 1.5" fill="#f5d5a0" />
-            <polygon points="1.5,44 3.5,44 2.5,48" fill="var(--text-muted)" />
+          <g transform="translate(28, 26)" stroke="var(--brand)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" fill="none">
+            <path d="M5 5h44l14 14v52H5z" opacity="0.9" />
+            <path d="M49 5v14h14" />
+            <path d="M18 36h32M18 48h32M18 60h20" />
           </g>
-          <!-- 小装饰点 -->
-          <circle cx="22" cy="30" r="3" fill="var(--brand)" opacity="0.15" />
-          <circle cx="100" cy="90" r="4" fill="var(--brand)" opacity="0.12" />
         </svg>
       </div>
       <p class="empty__title">还没有记事</p>

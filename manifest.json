@@ -2,8 +2,8 @@
   "name": "柚子便签",
   "appid": "",
   "description": "一款温暖亲切的记事本应用",
-  "versionName": "2.2.0",
-  "versionCode": 220,
+  "versionName": "2.3.0",
+  "versionCode": 230,
   "transformPx": false,
   "app-plus": {
     "usingComponents": true,

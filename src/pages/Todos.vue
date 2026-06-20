@@ -30,13 +30,7 @@
 
     <!-- ============ 列表 ============ -->
     <template v-if="todos.length">
-      <!-- 未完成 -->
-      <TransitionGroup
-        v-if="uncompleted.length"
-        name="list"
-        tag="div"
-        class="todo-list"
-      >
+      <TransitionGroup name="list" tag="div" class="todo-list">
         <article
           v-for="todo in uncompleted"
           :key="todo.id"
@@ -84,55 +78,36 @@
             </svg>
           </button>
         </article>
-      </TransitionGroup>
 
-      <!-- 已完成分组 -->
-      <template v-if="completed.length && !isSelectMode">
-        <button class="group-toggle" @click="showDone = !showDone">
-          <svg
-            viewBox="0 0 24 24" fill="none"
-            class="group-toggle__arrow"
-            :class="{ 'is-open': showDone }"
-          >
-            <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-          <span>已完成 ({{ completed.length }})</span>
-        </button>
-
-        <Transition name="page">
-          <div v-if="showDone" class="done-group">
-            <TransitionGroup name="list" tag="div" class="todo-list todo-list--muted">
-              <article
-                v-for="todo in completed"
-                :key="todo.id"
-                class="card card--done"
-              >
-                <div class="card__accent card__accent--done" aria-hidden="true"></div>
-                <div class="card__inner">
-                  <button
-                    class="ck ck--on"
-                    aria-label="取消完成"
-                    @click.stop="toggleComplete(todo)"
-                  >
-                    <svg viewBox="0 0 24 24" fill="none">
-                      <path d="M6 12.5l4 4 8-8.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                  </button>
-                  <div class="card__body">
-                    <p class="card__text card__text--done">{{ todo.text }}</p>
-                    <span v-if="todo.dueDate" class="card__due">{{ formatDate(todo.dueDate) }}</span>
-                  </div>
-                </div>
-                <button class="card__rm" aria-label="删除" @click.stop="quickDelete(todo)">
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-                  </svg>
-                </button>
-              </article>
-            </TransitionGroup>
+        <!-- 已完成：直接排在未完成下面，不再折叠 -->
+        <article
+          v-for="todo in completed"
+          :key="todo.id"
+          class="card card--done"
+        >
+          <div class="card__accent card__accent--done" aria-hidden="true"></div>
+          <div class="card__inner">
+            <button
+              class="ck ck--on"
+              aria-label="取消完成"
+              @click.stop="toggleComplete(todo)"
+            >
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M6 12.5l4 4 8-8.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </button>
+            <div class="card__body">
+              <p class="card__text card__text--done">{{ todo.text }}</p>
+              <span v-if="todo.dueDate" class="card__due">{{ formatDate(todo.dueDate) }}</span>
+            </div>
           </div>
-        </Transition>
-      </template>
+          <button class="card__rm" aria-label="删除" @click.stop="quickDelete(todo)">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+            </svg>
+          </button>
+        </article>
+      </TransitionGroup>
     </template>
 
     <!-- ============ 空状态 ============ -->
@@ -176,7 +151,6 @@ const router = useRouter()
 const todos = ref([])
 const isSelectMode = ref(false)
 const selectedTodos = ref([])
-const showDone = ref(false)
 
 const uncompleted = computed(() =>
   todos.value.filter((t) => !t.completed)
